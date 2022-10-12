@@ -1,0 +1,6 @@
+ENVIRONMENT: ${opt:stage}
+STAGE: live
+TENANT: tdbank
+LOG_LEVEL: ERROR
+SENTRY_ENVIRONMENT: tdbank
+SENTRY_DSN: None

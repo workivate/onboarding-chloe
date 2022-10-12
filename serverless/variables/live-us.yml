@@ -1,0 +1,2 @@
+serviceDomain: ${opt:region}.services.io.${opt:stage}.lifeworks.com
+aws_account_name: lw-backend-live-us

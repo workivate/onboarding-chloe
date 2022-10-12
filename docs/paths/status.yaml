@@ -1,0 +1,75 @@
+openapi: 3.0.3
+
+pathInfo:
+  get:
+    summary: Healthcheck Endpoint
+    responses:
+      '200':
+        description: Returns healthcheck details for the API
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: |
+                    Unique identifier, might be repository name.
+                url:
+                  type: string
+                  format: url
+                  description: |
+                    Public url that other services might use.
+                server_time:
+                  type: string
+                  format: date-time
+                status:
+                  description: |
+                    Status of the entire service can be `ok` only in a scenario where all
+                    underlying dependencies and resources are in `ok` state.
+                  type: string
+                  enum:
+                    - ok
+                    - bad
+                dependencies:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      url:
+                        type: string
+                        format: url
+                      status:
+                        type: string
+                        enum:
+                          - ok
+                          - bad
+                resources:
+                  description: |
+                    Can be used to provide information about, disk, database, memory usage or
+                    other resources required by API.
+                  type: array
+                  example: |
+                    [
+                      {"id": "database-mongo", "status": "ok"},
+                      {"id": "database-dynamodb", "status": "ok"},
+                      {"id": "s3", "status": "bad", "used_space": "200TB"},
+                    ]
+                  items:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        status:
+                          type: string
+                          enum:
+                            - ok
+                            - bad
+              required:
+                - server_time
+                - status
+                - resources

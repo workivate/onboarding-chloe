@@ -1,0 +1,20 @@
+openapi: 3.0.3
+
+servers:
+  - url: https://services.io.integration.lifeworks.com/onboarding
+    description: Integration
+  - url: https://services.io.test.lifeworks.com/onboarding
+    description: Test
+  - url: https://services.io.lifeworks.com/onboarding
+    description: Live
+
+info:
+  description: None
+  version: "1.0.0"
+  title: onboarding
+
+paths:
+  /ping:
+    $ref: "paths/ping.yaml#/pathInfo"
+  /status:
+    $ref: "paths/status.yaml#/pathInfo"

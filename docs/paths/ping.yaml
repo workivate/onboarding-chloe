@@ -1,0 +1,10 @@
+openapi: 3.0.3
+
+pathInfo:
+  get:
+    summary: Healthcheck Ping Endpoint
+    tags:
+      - General
+    responses:
+        '204':
+          description: Service is reachable

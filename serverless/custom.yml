@@ -1,0 +1,45 @@
+tenant: ${self:provider.environment.TENANT}
+environment: ${self:provider.environment.ENVIRONMENT}
+log_level: ${self:provider.environment.LOG_LEVEL}
+variables: ${file(./serverless/variables/${opt:stage, 'integration'}.yml)}
+
+customDomain:
+  domainName: ${self:custom.variables.serviceDomain}
+  basePath: ${self:service}
+  stage: ${opt:stage}
+  createRoute53Record: false
+
+serverless-aws-resource-names:
+  source: mapping.json
+  variables:
+    functionPrefix: onboarding
+
+vpcDiscovery:
+  vpcName: Lifeworks TerraformNetwork
+  subnets:
+    - tagKey: Name
+      tagValues:
+        - lambda-private
+        - lambda-private
+  securityGroups:
+    - names:
+      - allow-https-access
+      - with-https-access
+      - role-lambda-function
+
+pythonRequirements:
+  dockerizePip: false
+  pipCmdExtraArgs:
+    - --extra-index-url
+    - https://pypi.fury.io/${env:GEMFURY_TOKEN}/lifeworks/
+  useStaticCache: false
+  useDownloadCache: false
+
+kmsGrants:
+  - kmsKeyId: alias/parameter-store-key
+    roleName: ${self:service}-${opt:region}-lambda-role
+
+prune:
+  automatic: true
+  includeLayers: true
+  number: 3

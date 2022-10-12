@@ -1,0 +1,61 @@
+service: onboarding
+
+package:
+  excludeDevDependencies: false
+  patterns:
+    - "!./**/**"
+    - "docs/**"
+    - "onboarding/**"
+provider:
+  name: aws
+  runtime: python3.9
+  apiName: ${self:service}
+  stage: ${self:custom.environment}
+  timeout: 10
+  logRetentionInDays: 30
+  stackName: ${self:service}
+  deploymentBucket:
+    name: ${opt:region}.packages.io.${opt:stage}.lifeworks.com
+  lambdaHashingVersion: 20201221
+  tracing:
+    lambda: true
+    apiGateway: true
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ssm:GetParametersByPath
+          Resource:
+            - Fn::Sub: arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/service/${self:service}
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource:
+            - Fn::Sub: arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${self:custom.serverless-aws-resource-names.variables.functionPrefix}_*
+  environment: ${file(./serverless/environments/${opt:stage, 'integration'}.yml)}
+  tags:
+    service: ${self:service}
+
+  stackTags:
+    owner: backend
+    service: ${self:service}
+    stack: lifeworks
+    confidentiality: PII
+    environment: ${self:custom.environment}
+    aws-account-name: ${self:custom.variables.aws_account_name}
+    aws-region: ${opt:region}
+    managed-by: serverless-cloudformation
+    version: NONE
+
+plugins:
+  - serverless-aws-resource-names
+  - serverless-python-requirements
+  - serverless-kms-grants
+  - serverless-vpc-discovery
+  - serverless-domain-manager
+  - serverless-prune-plugin
+
+custom: ${file(./serverless/custom.yml)}
+
+functions: ${file(./serverless/functions.yml)}

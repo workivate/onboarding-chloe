@@ -1,0 +1,23 @@
+ping:
+  description: Check if application is running
+  handler: onboarding.healthcheck.handlers.get_ping
+  events:
+    - http:
+        path: /ping
+        method: get
+
+status:
+  description: Check application's health status
+  handler: onboarding.healthcheck.handlers.get_status
+  events:
+    - http:
+        path: /status
+        method: get
+
+statusOptions:
+  description: Get information about the status endpoint
+  handler: onboarding.healthcheck.handlers.options_status
+  events:
+    - http:
+        path: /status
+        method: options

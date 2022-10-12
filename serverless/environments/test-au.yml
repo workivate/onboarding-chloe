@@ -1,0 +1,6 @@
+ENVIRONMENT: ${opt:stage}
+STAGE: test
+TENANT: multi-tenant
+LOG_LEVEL: INFO
+SENTRY_ENVIRONMENT: test
+SENTRY_DSN: None

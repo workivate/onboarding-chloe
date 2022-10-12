@@ -1,0 +1,10 @@
+project_description: null
+project_name: onboarding
+python_version: '3.9'
+sentry_dsn_integration: null
+sentry_dsn_integration_au: null
+sentry_dsn_live: null
+sentry_dsn_singletenant_test: null
+sentry_dsn_tdbank: null
+sentry_dsn_test: null
+sentry_dsn_test_au: null

@@ -1,0 +1,6 @@
+ENVIRONMENT: ${opt:stage}
+STAGE: test
+TENANT: tdbank
+LOG_LEVEL: INFO
+SENTRY_ENVIRONMENT: singletenant-test
+SENTRY_DSN: None
