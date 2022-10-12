@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "onboarding"
+version = "0.1.0"
+description = ""
+authors = ["LifeWorks <LifeWorksBackend@morneaushepell.com>"]
+readme = "README.md"
+include = ["README.md"]
+homepage = ""
+repository = ""
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3 :: Only"
+]
+
+[[tool.poetry.source]]
+name = "lifeworks"
+url = "https://pypi.fury.io/lifeworks/"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+aws-lambda-context = "^1.1.0"
+sentry_sdk = "^0.19.5"
+boto3 = "^1.16.42"
+mypy-boto3-dynamodb = "^1.17.14"
+mypy-boto3-s3 = "^1.17.14"
+chocs = "^1.6.1"
+kink = "^0.6.3"
+"chocs-middleware.trace" = "^0.3.0"
+"chocs-middleware.openapi" = "^1.1.0"
+lw-api-status = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^4.5"
+black = "^21.10b0"
+mypy = "^0.812.0"
+flake8 = "^3.8.4"
+pytest-cov = "^2.10.1"
+isort = "^5.6.4"
+pre-commit = "^2.9.3"
+
+[tool.black]
+line-length = 120
+target-version = ["py39"]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
