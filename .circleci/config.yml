@@ -1,7 +1,7 @@
 version: 2.1
 
 default_python_image: &default_python_image
-  image: cimg/python:3.8-node
+  image: cimg/python:3.9-node
 
 attach_workspace: &attach_workspace
   attach_workspace:
