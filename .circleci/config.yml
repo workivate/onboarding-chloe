@@ -1,0 +1,474 @@
+version: 2.1
+
+default_python_image: &default_python_image
+  image: cimg/python:3.8-node
+
+attach_workspace: &attach_workspace
+  attach_workspace:
+    at: ~/workspace
+
+project_working_dir: &project_working_dir
+  working_directory: ~/workspace/project
+
+# [EXTENSION] - root
+
+# Release hooks
+release: &release
+  filters:
+    tags:
+      only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:\-hotfix(\.(?:[0-9]+))?)?$/
+    branches:
+      ignore: /.*/
+
+pre_release_integration: &pre_release_integration
+  filters:
+    tags:
+      only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:\-alpha(\.(?:[0-9]+))?)$/
+    branches:
+      ignore: /.*/
+
+
+pre_release_test: &pre_release_test
+  filters:
+    tags:
+      only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:\-beta(\.(?:[0-9]+))?)$/
+    branches:
+      ignore: /.*/
+
+# Deployments
+deploy_to_test_au: &deploy_to_test_au
+  name: Deploy to test-au
+  context: lw-backend-test-au
+  aws-region: ap-southeast-2
+  environment: test-au
+
+deploy_to_test_singletenant: &deploy_to_test_singletenant
+  name: Deploy to test-singletenant
+  context: lw-backend-singletenant
+  aws-region: ca-central-1
+  environment: singletenant-test
+
+deploy_to_test: &deploy_to_test
+  name: Deploy to test
+  context: lw-backend-test
+  aws-region: eu-west-1
+  environment: test
+
+deploy_to_integration_au: &deploy_to_integration_au
+  name: Deploy to integration-au
+  context: lw-backend-integration-au
+  aws-region: ap-southeast-2
+  environment: integration-au
+
+deploy_to_integration: &deploy_to_integration
+  name: Deploy to integration
+  context: lw-backend-integration
+  aws-region: eu-west-1
+  environment: integration
+
+deploy_to_live: &deploy_to_live
+  name: Deploy to live
+  context: lw-backend-live
+  aws-region: eu-west-1
+  environment: live
+
+deploy_to_live_au: &deploy_to_live_au
+  name: Deploy to live AU
+  context: lw-backend-live-au
+  aws-region: ap-southeast-2
+  environment: live-au
+
+deploy_to_live_us: &deploy_to_live_us
+  name: Deploy to live US
+  context: lw-backend-live-us
+  aws-region: us-east-1
+  environment: live-us
+
+deploy_to_live_ca: &deploy_to_live_ca
+  name: Deploy to live CA
+  context: lw-backend-live-ca
+  aws-region: ca-central-1
+  environment: live-ca
+
+deploy_to_tdbank_live: &deploy_to_tdbank_live
+  name: Deploy to tdbank (live)
+  context: lw-backend-tdbank
+  aws-region: ca-central-1
+  environment: tdbank
+
+dependencies_context: &dependencies_context
+  context: lw-backend-ci
+
+executors:
+  python:
+    <<: *project_working_dir
+    docker:
+      - <<: *default_python_image
+
+jobs:
+  checkout_code:
+    executor: python
+    steps:
+      - checkout
+      - persist_to_workspace:
+          root: ~/workspace
+          paths:
+            - project/*
+
+  deploy:
+    executor: python
+    parameters:
+      environment:
+        type: string
+      aws-region:
+        type: enum
+        enum: [ 'eu-west-2', 'eu-west-1', 'us-east-1', 'ca-central-1', 'ap-southeast-2' ]
+    steps:
+      - <<: *attach_workspace
+      - run:
+          command: |
+            echo "export AWS_DEFAULT_REGION=<< parameters.aws-region >>"
+      - run:
+          name: Running serverless deploy
+          command: |
+            cd ~/workspace/project
+            npm ci
+            ./node_modules/.bin/serverless deploy -v --force --conceal --stage << parameters.environment >> --region << parameters.aws-region >>
+
+  setup_tools:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run: poetry export --without-hashes -f requirements.txt >> requirements.txt
+      - run: echo -e "--extra-index-url https://$GEMFURY_TOKEN:@pypi.fury.io/lifeworks\n\n$(cat requirements.txt)" > requirements.txt
+      - run: python --version >> python-version.txt
+      - restore_cache:
+          keys:
+            - tools-deps-{{ checksum "requirements.txt" }}-{{ checksum "python-version.txt" }}
+      - run:
+          name: setup linting tools
+          command: |
+            python -m venv ~/workspace/tools
+            . ~/workspace/tools/bin/activate
+            pip install --upgrade pip
+            pip install poetry
+            pip install black
+            pip install safety
+            pip install isort
+            pip install bandit
+            pip install openapi-spec-validator
+            pip install mypy
+            pip install flake8
+            pip install cfn-lint
+            pip install cfn-lint-serverless
+            pip install -r requirements.txt
+
+      - save_cache:
+          paths:
+            - ~/workspace/tools
+          key: tools-deps-{{ checksum "requirements.txt" }}-{{ checksum "python-version.txt" }}
+
+      - persist_to_workspace:
+          root: ~/workspace
+          paths:
+            - tools/*
+
+  install_dependencies:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run: python --version >> python-version.txt
+      - restore_cache:
+          keys:
+            - deps-{{ checksum "poetry.lock" }}-{{ checksum "python-version.txt" }}
+      - run: poetry config virtualenvs.path ~/workspace/poetry
+      - run: poetry config repositories.lifeworks https://pypi.fury.io/lifeworks
+      - run: poetry config http-basic.lifeworks $GEMFURY_TOKEN $GEMFURY_TOKEN
+      - run: poetry install
+      - save_cache:
+          key: deps-{{ checksum "poetry.lock" }}-{{ checksum "python-version.txt" }}
+          paths:
+            - ~/workspace/poetry
+      - persist_to_workspace:
+          root: ~/workspace
+          paths:
+            - project/*
+            - poetry/*
+
+  audit_dependencies:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run:
+          name: run safety
+          command: |
+            . ~/workspace/tools/bin/activate
+            safety check
+
+  audit_code_security:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run:
+          name: run bandit
+          command: |
+            . ~/workspace/tools/bin/activate
+            bandit -r . -x ./tests,./test
+
+  lint_code:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run:
+          name: Linting code
+          command: |
+            . ~/workspace/tools/bin/activate
+            isort .
+            black .
+
+  static_analysis:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run:
+          name: Create mypy cache
+          command: mkdir .mypy_cache
+      - run:
+          name: Setup mypy dependencies
+          command: |
+            . ~/workspace/tools/bin/activate
+            yes | mypy . --install-types || true
+      - run:
+          name: Run mypy
+          command: |
+            . ~/workspace/tools/bin/activate
+            mypy .
+
+  run_flake8:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run:
+          name: run flake
+          command: |
+            . ~/workspace/tools/bin/activate
+            flake8 --version
+            flake8
+
+  validate_open_api:
+    executor: python
+    parameters:
+      path:
+        type: string
+    steps:
+      - <<: *attach_workspace
+      - run:
+          name: validate open api file
+          command: |
+            . ~/workspace/tools/bin/activate
+            openapi-spec-validator ~/workspace/project<< parameters.path >>
+
+  inspect_serverless_rules:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run:
+          name: Inspect Serverless Rules Best Practices
+          command: |
+            . ~/workspace/tools/bin/activate
+            cd ~/workspace/project
+            npm ci
+            ./node_modules/.bin/serverless package --package output/ --stage integration --region eu-west-1
+            cfn-lint output/cloudformation-template-*.json -a cfn_lint_serverless.rules
+
+  generate_docs:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run:
+          name: Install packages
+          command: |
+            cd ~/workspace/project
+            npm install
+            npm install gh-pages@3.2.3
+            git config user.email "docs-build@lifeworks.com"
+            git config user.name "docs-build"
+      - run:
+          name: Build docs
+          command: npm run build-docs
+      - add_ssh_keys:
+          fingerprints:
+            - "{{CIRCLE_FINGERPRINT}}"
+      - run:
+          name: Verify GitHub SSH keys
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: npm run deploy-docs
+
+  run_tests:
+    executor: python
+    steps:
+      - <<: *attach_workspace
+      - run: poetry config virtualenvs.path ~/workspace/poetry
+      - run: poetry run pytest --junitxml=test-results/junit.xml
+      - run: pip install coverage
+      - run: coverage report && coverage xml -o test-results/coverage.xml
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+
+# [EXTENSION] - job
+
+workflows:
+  CI workflow:
+    jobs:
+      - checkout_code
+      - setup_tools:
+          context: lw-backend-ci
+          requires:
+            - checkout_code
+      - install_dependencies:
+          context: lw-backend-ci
+          requires:
+            - checkout_code
+      - audit_dependencies:
+          requires:
+            - setup_tools
+      - audit_code_security:
+          requires:
+            - setup_tools
+      - lint_code:
+          requires:
+            - setup_tools
+      - validate_open_api:
+          path: /docs/openapi.yaml
+          requires:
+            - setup_tools
+      - static_analysis:
+          requires:
+            - setup_tools
+      - run_flake8:
+          requires:
+            - lint_code
+            - static_analysis
+      - inspect_serverless_rules:
+          context: lw-backend-ci
+          requires:
+            - setup_tools
+      - run_tests:
+          requires:
+            - install_dependencies
+# gh_pages      - generate_docs:
+# gh_pages          filters:
+# gh_pages            branches:
+# gh_pages              only: master
+# gh_pages          requires:
+# gh_pages            - run_tests
+
+  CD workflow - Production:
+    jobs:
+      - checkout_code:
+          <<: *release
+      - install_dependencies:
+          <<: *dependencies_context
+          <<: *release
+          requires:
+            - checkout_code
+      - run_tests:
+          <<: *release
+          requires:
+            - install_dependencies
+      - deploy:
+          <<: *deploy_to_live
+          <<: *release
+          requires:
+            - run_tests
+      - deploy:
+          <<: *deploy_to_live_au
+          <<: *release
+          requires:
+            - run_tests
+      - deploy:
+          <<: *deploy_to_live_ca
+          <<: *release
+          requires:
+            - run_tests
+      - deploy:
+          <<: *deploy_to_live_us
+          <<: *release
+          requires:
+            - run_tests
+      - deploy:
+          <<: *deploy_to_tdbank_live
+          <<: *release
+          requires:
+            - run_tests
+
+  CD workflow - Integration:
+    jobs:
+      - checkout_code:
+          <<: *pre_release_integration
+      - install_dependencies:
+          <<: *dependencies_context
+          <<: *pre_release_integration
+          requires:
+            - checkout_code
+      - run_tests:
+          <<: *pre_release_integration
+          requires:
+            - install_dependencies
+      - deploy:
+          <<: *pre_release_integration
+          <<: *deploy_to_integration
+          requires:
+            - run_tests
+      - deploy:
+          <<: *pre_release_integration
+          <<: *deploy_to_integration_au
+          requires:
+            - run_tests
+
+  CD workflow - Test:
+    jobs:
+      - checkout_code:
+          <<: *pre_release_test
+      - install_dependencies:
+          <<: *pre_release_test
+          <<: *dependencies_context
+          requires:
+            - checkout_code
+      - run_tests:
+          <<: *pre_release_test
+          requires:
+            - install_dependencies
+      - deploy:
+          <<: *pre_release_test
+          <<: *deploy_to_integration
+          requires:
+            - run_tests
+      - deploy:
+          <<: *pre_release_test
+          <<: *deploy_to_integration_au
+          requires:
+            - run_tests
+      - deploy:
+          <<: *pre_release_test
+          <<: *deploy_to_test
+          requires:
+            - run_tests
+      - deploy:
+          <<: *pre_release_test
+          <<: *deploy_to_test_au
+          requires:
+            - run_tests
+      - deploy:
+          <<: *pre_release_test
+          <<: *deploy_to_test_singletenant
+          requires:
+            - run_tests
+
+# [EXTENSION] - workflow
