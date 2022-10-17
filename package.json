@@ -17,7 +17,7 @@
         "serverless-aws-resource-names": "^0.1.2",
         "serverless-domain-manager": "^5.1.0",
         "serverless-kms-grants": "^1.0.2",
-        "serverless-prune-plugin": "^1.5.0",
+        "serverless-prune-plugin": "^2.0.1",
         "serverless-python-requirements": "^5.1.1",
         "serverless-vpc-discovery": "^3.0.0",
         "webpack": "^5.57.1",
