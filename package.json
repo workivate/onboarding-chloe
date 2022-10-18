@@ -1,33 +1,10 @@
 {
-    "name": "onboarding-chloe",
-    "version": "1.0.0",
-    "dependencies": {
-        "css-loader": "^6.3.0",
-        "json-loader": "^0.5.7",
-        "serverless": "^3.23.0",
-        "style-loader": "^3.3.0",
-        "swagger-ui": "^4.14.3",
-        "yaml-loader": "^0.6.0"
-    },
     "devDependencies": {
-        "@webpack-cli/serve": "^1.5.2",
-        "clean-webpack-plugin": "^4.0.0",
-        "copy-webpack-plugin": "^9.0.1",
-        "html-webpack-plugin": "^5.3.2",
-        "serverless-aws-resource-names": "^0.1.2",
-        "serverless-domain-manager": "^5.1.0",
-        "serverless-kms-grants": "^1.0.2",
-        "serverless-prune-plugin": "^2.0.1",
-        "serverless-python-requirements": "^5.1.1",
-        "serverless-vpc-discovery": "^3.0.0",
-        "webpack": "^5.57.1",
-        "webpack-cli": "^4.8.0",
-        "webpack-dev-server": "^4.3.1"
-    },
-    "scripts": {
-        "deploy-docs": "gh-pages -d ./docs/dist",
-        "build-docs": "webpack",
-        "build-docs-dev": "webpack --mode=development",
-        "start": "webpack-dev-server --open"
+      "serverless-aws-resource-names": "^0.1.2",
+      "serverless-domain-manager": "^6.1.0",
+      "serverless-kms-grants": "^1.1.0",
+      "serverless-prune-plugin": "^2.0.1",
+      "serverless-python-requirements": "^5.4.0",
+      "serverless-vpc-discovery": "^4.0.2"
     }
-}
+  }
