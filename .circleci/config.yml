@@ -357,10 +357,10 @@ workflows:
           requires:
             - lint_code
             - static_analysis
-      - inspect_serverless_rules:
-          context: lw-backend-ci
-          requires:
-            - setup_tools
+      # - inspect_serverless_rules:
+      #     context: lw-backend-ci
+      #     requires:
+      #       - setup_tools
       - run_tests:
           requires:
             - install_dependencies
