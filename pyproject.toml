@@ -30,7 +30,7 @@ kink = "^0.6.3"
 "chocs-middleware.trace" = "^0.3.0"
 "chocs-middleware.openapi" = "^1.1.0"
 lw-api-status = "^1.0.0"
-jsonschema = "^4.16.0"
+boto3-stubs = {extras = ["dynamodb"], version = "^1.23.6"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.5"
