@@ -12,7 +12,10 @@ customDomain:
 serverless-aws-resource-names:
   source: mapping.json
   variables:
-    functionPrefix: onboarding
+    functionPrefix: onboarding_tasks
+
+onboarding-table:
+  name: dynamics-onboarding
 
 vpcDiscovery:
   vpcName: Lifeworks TerraformNetwork
@@ -34,6 +37,11 @@ pythonRequirements:
     - https://pypi.fury.io/${env:GEMFURY_TOKEN}/lifeworks/
   useStaticCache: false
   useDownloadCache: false
+  layer:
+    name: chloe-onboarding
+    description: Python Lambda layer for chloe-onboarding
+    compatibleRuntimes:
+      - python3.9
 
 kmsGrants:
   - kmsKeyId: alias/parameter-store-key

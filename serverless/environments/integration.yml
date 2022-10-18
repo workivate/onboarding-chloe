@@ -3,4 +3,4 @@ STAGE: integration
 TENANT: multi-tenant
 LOG_LEVEL: DEBUG
 SENTRY_ENVIRONMENT: integration
-SENTRY_DSN: None
+TABLE_NAME: onboarding-tasks-adam
