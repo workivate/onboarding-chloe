@@ -1,6 +1,6 @@
 from chocs import HttpRequest, HttpResponse, HttpStatus
 from lw_api_status import ApiStatus
-from onboarding.application import app  # noqa: E999
+from c_onboarding.application import app  # noqa: E999
 
 
 @app.get("/ping")

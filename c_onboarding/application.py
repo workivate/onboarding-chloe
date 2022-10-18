@@ -4,7 +4,7 @@ from pathlib import Path
 from chocs.application import Application
 from chocs_middleware.openapi import OpenApiMiddleware
 from chocs_middleware.trace import TraceMiddleware
-from onboarding.bootstrap import bootstrap_di  # noqa: E999
+from c_onboarding.bootstrap import bootstrap_di  # noqa: E999
 
 
 def get_openapi_file_path() -> str:

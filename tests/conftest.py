@@ -1,6 +1,6 @@
 import pytest
 from chocs.testing import TestClient
-from onboarding.application import app  # noqa: E999
+from c_onboarding.application import app  # noqa: E999
 
 # Suppress pytest errors due to class name
 TestClient.__test__ = False

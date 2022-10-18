@@ -1,6 +1,6 @@
 ping:
   description: Check if application is running
-  handler: onboarding_tasks.healthcheck.handlers.get_ping
+  handler: c_onboarding.healthcheck.handlers.get_ping
   events:
     - http:
         path: /ping
@@ -8,7 +8,7 @@ ping:
 
 status:
   description: Check application's health status
-  handler: onboarding_tasks.healthcheck.handlers.get_status
+  handler: c_onboarding.healthcheck.handlers.get_status
   events:
     - http:
         path: /status
@@ -16,7 +16,7 @@ status:
 
 statusOptions:
   description: Get information about the status endpoint
-  handler: onboarding_tasks.healthcheck.handlers.options_status
+  handler: c_onboarding.healthcheck.handlers.options_status
   events:
     - http:
         path: /status
@@ -24,7 +24,7 @@ statusOptions:
 
 helloWorld:
   description: returns a json response of the users name and the date time
-  handler: onboarding_tasks.hello_world.handlers.get_hello_world
+  handler: c_onboarding.hello_world.handlers.get_hello_world
   events:
     - http:
         path: /hello/{name}/{start_date}/{end_date}
