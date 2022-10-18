@@ -156,12 +156,14 @@ jobs:
             pip install safety
             pip install isort
             pip install bandit
-            pip install openapi-spec-validator
+            pip install openapi-spec-validator==0.4.0
             pip install mypy
             pip install flake8
             pip install cfn-lint
             pip install cfn-lint-serverless
+            pip install --upgrade jsonschema
             pip install -r requirements.txt
+            
 
       - save_cache:
           paths:
@@ -268,18 +270,18 @@ jobs:
             . ~/workspace/tools/bin/activate
             openapi-spec-validator ~/workspace/project<< parameters.path >>
 
-  inspect_serverless_rules:
-    executor: python
-    steps:
-      - <<: *attach_workspace
-      - run:
-          name: Inspect Serverless Rules Best Practices
-          command: |
-            . ~/workspace/tools/bin/activate
-            cd ~/workspace/project
-            npm ci
-            ./node_modules/.bin/serverless package --package output/ --stage integration --region eu-west-1
-            cfn-lint output/cloudformation-template-*.json -a cfn_lint_serverless.rules
+  # inspect_serverless_rules:
+  #   executor: python
+  #   steps:
+  #     - <<: *attach_workspace
+  #     - run:
+  #         name: Inspect Serverless Rules Best Practices
+  #         command: |
+  #           . ~/workspace/tools/bin/activate
+  #           cd ~/workspace/project
+  #           npm ci
+  #           ./node_modules/.bin/serverless package --package output/ --stage integration --region eu-west-1
+  #           cfn-lint output/cloudformation-template-*.json -a cfn_lint_serverless.rules
 
   generate_docs:
     executor: python
