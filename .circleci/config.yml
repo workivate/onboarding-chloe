@@ -162,6 +162,7 @@ jobs:
             pip install cfn-lint
             pip install cfn-lint-serverless
             pip install --upgrade jsonschema
+            pip install chocs
             pip install -r requirements.txt
             
 
