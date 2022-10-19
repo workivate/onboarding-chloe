@@ -1,4 +1,4 @@
-ping:
+c_ping:
   description: Check if application is running
   handler: onboarding.healthcheck.handlers.get_ping
   events:
@@ -6,7 +6,7 @@ ping:
         path: /ping
         method: get
 
-status:
+c_status:
   description: Check application's health status
   handler: onboarding.healthcheck.handlers.get_status
   events:
