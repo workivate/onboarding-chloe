@@ -14,7 +14,7 @@ status:
         path: /status
         method: get
 
-statusOptions:
+c_statusOptions:
   description: Get information about the status endpoint
   handler: onboarding.healthcheck.handlers.options_status
   events:
