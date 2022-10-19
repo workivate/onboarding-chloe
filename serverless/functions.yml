@@ -22,7 +22,7 @@ c_statusOptions:
         path: /status
         method: options
 
-helloWorld:
+c_helloWorld:
   description: returns a json response of the users name and the date time
   handler: onboarding.hello_world.handlers.get_hello_world
   events:
